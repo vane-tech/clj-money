@@ -48,27 +48,39 @@
       (-> moneys first :currency)
       currencies/default-currency))
 
-(defn plus [& moneys]
+(defn plus
+  "Sums up all given money structures"
+  [& moneys]
   {:pre [(same-currency moneys)]}
   {:currency (first-non-zero-currency moneys)
    :cents (->> moneys (map :cents) (reduce +))})
 
-(defn minus [& moneys]
+(defn minus
+  "Substracts the given money structures from the first"
+  [& moneys]
   {:pre [(same-currency moneys)]}
   {:cents (if (empty? moneys)
             0
             (->> moneys (map :cents) ((partial apply -))))
    :currency (first-non-zero-currency moneys)})
 
-(defn multiply [money & multipliers]
+(defn multiply
+  "Multipies the given money structure by the multipliers"
+  [money & multipliers]
   {:currency (:currency money)
    :cents (floor (apply * (conj multipliers (:cents money))))})
 
-(defn divide [money & divisors]
+(defn divide
+  "Divides the given money structure by the divisors"
+  [money & divisors]
   {:currency (:currency money)
    :cents (floor (apply / (conj divisors (:cents money))))})
 
-(defn round-down-to-multiple-of [round-to money]
+(defn round-down-to-multiple-of
+  "Rounds the second money structure to a multiple of the first
+   E.g. (round-down-to-multiple-of {:cents 10000, :currency \"EUR\"} {:cents 39912, currency \"EUR\"})
+        # => {:cents 30000, :currency \"EUR\"}"
+  [round-to money]
   {:pre [(same-currency [money round-to])]}
   (if (nil? round-to)
     money
@@ -79,39 +91,58 @@
                 floor
                 (* (:cents round-to)))}))
 
-(defn eq [& moneys]
+(defn eq
+  "Returns true if all money structures are equal"
+  [& moneys]
   {:pre [(same-currency moneys)]}
   (->> moneys (map :cents) (apply =)))
 
-(defn not-eq [& moneys]
+(defn not-eq
+  "Returns true if the given money structures are not equal"
+  [& moneys]
   (not (apply eq moneys)))
 
-(defn gt [& moneys]
+(defn gt
+  "Returns true if the given money structures are >"
+  [& moneys]
   {:pre [(same-currency moneys)]}
   (->> moneys (map :cents) (apply >)))
 
-(defn lt [& moneys]
+(defn lt
+  "Returns true if the given money structures are <"
+  [& moneys]
   {:pre [(same-currency moneys)]}
   (->> moneys (map :cents) (apply <)))
 
-(defn ge [& moneys]
+(defn ge
+  "Returns true if the given money structures are >="
+  [& moneys]
   {:pre [(same-currency moneys)]}
   (->> moneys (map :cents) (apply >=)))
 
-(defn le [& moneys]
+(defn le
+  "Returns true if the given money structures are <="
+  [& moneys]
   {:pre [(same-currency moneys)]}
   (->> moneys (map :cents) (apply <=)))
 
-(defn zero? [money]
+(defn zero?
+  "Returns true if the given money structure is zero"
+  [money]
   (clojure.core/zero? (:cents money)))
 
-(defn positive? [money]
+(defn positive?
+  "Returns true if the given money structure is positive"
+  [money]
   (pos? (:cents money)))
 
-(defn negative? [money]
+(defn negative?
+  "Returns true if the given money structure is negative"
+  [money]
   (clojure.core/neg? (:cents money)))
 
 (defn minimum
+  "Returns the smallest of the given money structures"
   ([]
    {:cents 0 :currency currencies/default-currency})
   ([& moneys]
@@ -120,6 +151,7 @@
     :cents (->> moneys (map :cents) (apply min))}))
 
 (defn maximum
+  "Returns the biggest of the given money structure"
   ([]
    {:cents 0 :currency currencies/default-currency})
   ([& moneys]
@@ -127,7 +159,13 @@
    {:currency (first-non-zero-currency moneys)
     :cents (->> moneys (map :cents) (apply max))}))
 
-(defn format-amount [{:keys [cents currency]}
+(defn format-amount
+  "Returns the formatted amount of the given money structure
+   E.g. (format-amount {:cents 432199, :currency \"EUR\"})
+        # => \"4,321\"
+   :display-cents true - print cents (\"4,321.99\" in the example above\") - false per default
+   :group-separator - use the given separator instead of the comma"
+  [{:keys [cents currency]}
                      {:keys [display-cents group-separator]}]
   (let [group-separator (or group-separator ",")
         currency-rules (currencies/currency->currency-rules currency)
@@ -160,6 +198,10 @@
               :cljs (gstring/format format-str subunit-amt))))))
 
 (defn format
+  "Returns the formatted amount and currency
+  E.g. (format {:cents 432199, :currency \"EUR\"})
+       # => \"4,321.99 EUR\"
+  :display-cents false - hide the cents (\"4,321 EUR\" in the example above) - true per default"
   ([amount]
    (format amount {:display-cents true}))
   ([{:keys [cents currency] :as amount} options]
@@ -167,7 +209,11 @@
      (recur {:cents 0 :currency currency} options)
      (str (format-amount amount options) " " currency))))
 
-(defn percent-ratio [a b]
+(defn percent-ratio
+  "Returns the ratio between the given money structures as a percent value
+  E.g. (percent-ratio {:cents 218, :currency \"EUR\"} {:cents 1000, :currency \"EUR\"})
+       # => {:cents 109/5, :currency \"EUR\"}"
+  [a b]
   {:pre [(same-currency [a b])]}
   (* (/ (:cents a) (:cents b)) 100))
 
