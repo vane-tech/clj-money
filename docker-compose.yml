@@ -3,6 +3,9 @@ version: '3.7'
 services:
   money:
     build: .
+    environment:
+      CLOJARS_USERNAME: vane
+      CLOJARS_PASSWORD:
     volumes:
       - .:/money
       - "./tmp/m2/:/root/.m2"

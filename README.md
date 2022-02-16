@@ -14,6 +14,21 @@ Each value is represented as a simple map
 
 It was extracted from a long existing internal usage, and is just tailored for our own use cases and probably needs some polishing. Feel free to fork, extend, adjust etc.
 
+Releasing a new version
+=======================
+
+First, open [build.clj](./build.clj) and update the `version`. Then run these commands:
+
+```sh
+export MONEY_VERSION=$(grep -Po 'def version "\K.*?(?=")' build.clj)
+git commit -pm "Release $MONEY_VERSION"
+git tag v$MONEY_VERSION
+git push
+git push --tags
+bin/in_docker clj -T:build jar
+ CLOJARS_PASSWORD=<Clojars Deploy token> bin/in_docker clj -T:build deploy
+```
+
 MIT License
 ===========
 
