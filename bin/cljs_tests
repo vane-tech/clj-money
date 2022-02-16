@@ -1,0 +1,3 @@
+#!/bin/sh
+
+shadow-cljs compile test && node tmp/cljs_test/node-tests.js

@@ -1,0 +1,4 @@
+{:deps {:aliases [:cljs]}
+ :builds {:test {:target :node-test
+                 :output-to "tmp/cljs_test/node-tests.js"
+                 :output-dir "tmp/cljs_test"}}}

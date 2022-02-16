@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$(uname)" == "Darwin" ] || groups | grep -qw docker ; then
+  docker-compose run money "$@"
+else
+  sudo docker-compose run money "$@"
+fi

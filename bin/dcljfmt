@@ -1,0 +1,3 @@
+#!/bin/sh
+
+bin/in_docker clojure -A:cljfmt "$@"
