@@ -1,6 +1,8 @@
 Clj-money
 ---------
 
+[![CircleCI](https://circleci.com/gh/vane-tech/clj-money/tree/main.svg?style=svg)](https://circleci.com/gh/vane-tech/clj-money/tree/main)
+
 A small Clojure & ClojureScript library to format and compute with money amounts.
 
 Each value is represented as a simple map

@@ -1,5 +1,5 @@
 (ns clj-money.main
-  (:refer-clojure :exclude [divide zero?])
+  (:refer-clojure :exclude [divide zero? format NaN?])
   (:require
    [clj-money.currencies :as currencies]
    [clojure.string :as str]
@@ -166,7 +166,7 @@
    :display-cents true - print cents (\"4,321.99\" in the example above\") - false per default
    :group-separator - use the given separator instead of the comma"
   [{:keys [cents currency]}
-                     {:keys [display-cents group-separator]}]
+   {:keys [display-cents group-separator]}]
   (let [group-separator (or group-separator ",")
         currency-rules (currencies/currency->currency-rules currency)
         subunit-to-unit (:subunit-to-unit currency-rules)

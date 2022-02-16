@@ -1,7 +1,7 @@
 (ns build
   (:require
-    [clojure.tools.build.api :as b]
-    [deps-deploy.deps-deploy :as dd]))
+   [clojure.tools.build.api :as b]
+   [deps-deploy.deps-deploy :as dd]))
 
 (def lib 'capital.vane/clj-money)
 (def version "0.0.1")

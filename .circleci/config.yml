@@ -1,0 +1,52 @@
+version: 2.1
+orbs:
+  node: circleci/node@5.0.0
+jobs:
+  test:
+    docker:
+      - image: circleci/clojure:tools-deps
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "deps.edn" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: clojure -A:test -A:clj-kondo -A:cljfmt -P
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "deps.edn" }}
+
+      - node/install:
+          install-yarn: true
+          node-version: '16.13'
+
+      - run: yarn install
+
+      # run tests!
+      - run:
+          name: "Run tests with Clojure"
+          command: bin/kaocha
+      - run:
+          name: "Run tests with ClojureScript"
+          command: yarn exec bin/cljs_tests
+      - run: clojure -A:clj-kondo --lint src test build.clj
+      - run: clojure -A:cljfmt check src test deps.edn build.clj
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
