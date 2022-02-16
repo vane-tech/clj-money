@@ -31,7 +31,8 @@
                        (eur 60)))))
   (testing "different currencies"
     (print "Expecting error message: ")
-    (is (thrown? js/Error.
+    (is (thrown? #?(:cljs js/Error.
+                    :clj java.lang.AssertionError)
                  (money/plus (usd 50)
                              (eur 20))))))
 
@@ -52,7 +53,8 @@
                         (usd 0)))))
   (testing "different currencies"
     (print "Expecting error message: ")
-    (is (thrown? js/Error.
+    (is (thrown? #?(:cljs js/Error.
+                    :clj java.lang.AssertionError)
                  (money/minus (usd 50)
                               (eur 20))))))
 
@@ -82,9 +84,11 @@
       (eur 0) [(eur 50) (gbp 0)]))
   (testing "different currencies"
     (print "Expecting 2 error messages: ")
-    (is (thrown? js/Error.
+    (is (thrown? #?(:cljs js/Error.
+                    :clj java.lang.AssertionError)
                  (money/minimum (usd -100) (eur 100))))
-    (is (thrown? js/Error.
+    (is (thrown? #?(:cljs js/Error.
+                    :clj java.lang.AssertionError)
                  (money/minimum (usd 100) (eur 100))))))
 
 (deftest maximum-test
@@ -101,9 +105,11 @@
       (eur 50) [(eur 50) (gbp 0)]))
   (testing "different currencies"
     (print "Expecting 2 error messages:")
-    (is (thrown? js/Error.
+    (is (thrown? #?(:cljs js/Error.
+                    :clj java.lang.AssertionError)
                  (money/maximum (usd -100) (eur 100))))
-    (is (thrown? js/Error.
+    (is (thrown? #?(:cljs js/Error.
+                    :clj java.lang.AssertionError)
                  (money/maximum (usd 100) (eur 100))))))
 
 (deftest positive?-test
@@ -140,7 +146,7 @@
     "-100.45 USD" (usd -10045)
     "-1.01 DKK" (dkk -101)
     "-10,000 KRW" (krw -10000)
-    "0.00 EUR" (eur js/NaN))
+    "0.00 EUR" (eur ##NaN))
   (testing "cents"
     (is (= "123 EUR" (money/format (eur 12345) {:display-cents false})))
     (is (= "123.45 EUR" (money/format (eur 12345) {:display-cents true})))

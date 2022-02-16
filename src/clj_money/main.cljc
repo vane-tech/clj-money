@@ -3,19 +3,41 @@
   (:require
    [clj-money.currencies :as currencies]
    [clojure.string :as str]
-   [goog.string :as gstring]
-   [goog.string.format]))
+   #?(:cljs [goog.string :as gstring])
+   #?(:cljs [goog.string.format])))
 
 (def zero {:cents 0})
 
+(defn- NaN? [number]
+  #?(:cljs (js/isNaN number)
+     :clj (and (number? number) (Double/isNaN number))))
+
+(defn- print-error [msg]
+  #?(:cljs (.error js/console msg)
+     :clj (binding [*out* *err*]
+            (println msg))))
+
+(defn- parse-float [s]
+  #?(:cljs (.parseFloat js/window s)
+     :clj (Float/parseFloat s)))
+
+(defn- parse-int [s]
+  #?(:cljs (.parseInt js/window s)
+     :clj (java.lang.Integer/parseInt s)))
+
+(defn- floor [f]
+  (int (Math/floor f)))
+
 (defn- same-currency [moneys]
-  (let [all-same? (apply = (->> moneys
-                                (filter identity)
-                                (filter #(not= 0 (:cents %)))
-                                (map :currency)))]
+  (let [currencies (->> moneys
+                        (filter identity)
+                        (filter #(not= 0 (:cents %)))
+                        (map :currency))
+        all-same? (or (empty? currencies)
+                      (apply = currencies))]
     (when-not all-same?
-      (.error js/console (str "Cannot compare amounts in different currencies unless the amount is zero: "
-                              (pr-str moneys))))
+      (print-error (str "Cannot compare amounts in different currencies unless the amount is zero: "
+                        (pr-str moneys))))
     all-same?))
 
 (defn- first-non-zero-currency [moneys]
@@ -40,11 +62,11 @@
 
 (defn multiply [money & multipliers]
   {:currency (:currency money)
-   :cents (Math/floor (apply * (conj multipliers (:cents money))))})
+   :cents (floor (apply * (conj multipliers (:cents money))))})
 
 (defn divide [money & divisors]
   {:currency (:currency money)
-   :cents (Math/floor (apply / (conj divisors (:cents money))))})
+   :cents (floor (apply / (conj divisors (:cents money))))})
 
 (defn round-down-to-multiple-of [round-to money]
   {:pre [(same-currency [money round-to])]}
@@ -54,7 +76,7 @@
      :cents (-> money
                 :cents
                 (/ (:cents round-to))
-                Math/floor
+                floor
                 (* (:cents round-to)))}))
 
 (defn eq [& moneys]
@@ -119,7 +141,7 @@
                          (> subunit-to-unit 10) ".%02d"
                          (> subunit-to-unit 1) ".%01d"
                          :else "")
-        before-decimal (if (zero? unit-amt)
+        before-decimal (if (clojure.core/zero? unit-amt)
                          "0"
                          (->> unit-amt
                               Math/abs
@@ -134,13 +156,14 @@
     (str minus-if-negative
          before-decimal
          (when display-cents
-           (gstring/format format-str subunit-amt)))))
+           #?(:clj (clojure.core/format format-str subunit-amt)
+              :cljs (gstring/format format-str subunit-amt))))))
 
 (defn format
   ([amount]
    (format amount {:display-cents true}))
   ([{:keys [cents currency] :as amount} options]
-   (if (js/isNaN cents)
+   (if (NaN? cents)
      (recur {:cents 0 :currency currency} options)
      (str (format-amount amount options) " " currency))))
 
@@ -152,11 +175,11 @@
                                & [{:keys [:multiplier]}]]
   (let [multiplier (or multiplier 1)
         currency-rules (currencies/currency->currency-rules currency)
-        parsed-amount (.parseFloat js/window amount)
-        cents (if (.isNaN js/window parsed-amount)
+        parsed-amount (parse-float amount)
+        cents (if (NaN? parsed-amount)
                 nil
-                (.parseInt js/window (* parsed-amount
-                                        (:subunit-to-unit currency-rules)
-                                        multiplier)))]
+                (parse-int (* parsed-amount
+                              (:subunit-to-unit currency-rules)
+                              multiplier)))]
     {:cents cents
      :currency currency}))
