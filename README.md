@@ -2,6 +2,7 @@ Clj-money
 ---------
 
 [![CircleCI](https://circleci.com/gh/vane-tech/clj-money/tree/main.svg?style=svg)](https://circleci.com/gh/vane-tech/clj-money/tree/main)
+[![Clojars Project](https://img.shields.io/clojars/v/capital.vane/clj-money.svg)](https://clojars.org/capital.vane/clj-money)
 
 A small Clojure & ClojureScript library to format and compute with money amounts.
 
